@@ -1,0 +1,15 @@
+Content\Sample.xnb
+Content\DebugFont.xnb
+alvar200.dll
+alvarplatform200.dll
+ALVARWrapper.dll
+Newton.dll
+opencv_calib3d240.dll
+opencv_core240.dll
+opencv_features2d240.dll
+opencv_flann240.dll
+opencv_highgui240.dll
+opencv_imgproc240.dll
+opencv_legacy240.dll
+opencv_ml240.dll
+opencv_video240.dll
