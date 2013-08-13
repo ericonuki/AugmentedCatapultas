@@ -1,2 +1,14 @@
 Content\Sample.xnb
 Content\DebugFont.xnb
+Content\DirectXShader.xnb
+Content\Glow.xnb
+Content\MultiLightShadowMap.xnb
+Content\NormalMapping.xnb
+Content\ParticleEffect.xnb
+Content\SimpleShadowShader.xnb
+Content\DirectXShader.fx
+Content\Glow.fx
+Content\MultiLightShadowMap.fx
+Content\NormalMapping.fx
+Content\ParticleEffect.fx
+Content\SimpleShadowShader.fx

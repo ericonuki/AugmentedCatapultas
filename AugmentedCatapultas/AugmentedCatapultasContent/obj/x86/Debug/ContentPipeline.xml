@@ -19,16 +19,70 @@
       <Output>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\DebugFont.xnb</Output>
       <Time>2011-10-10T14:41:14-03:00</Time>
     </Item>
+    <Item>
+      <Source>DirectXShader.fx</Source>
+      <Name>DirectXShader</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+      <Options>None</Options>
+      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\DirectXShader.xnb</Output>
+      <Time>2011-10-10T14:41:14-03:00</Time>
+    </Item>
+    <Item>
+      <Source>Glow.fx</Source>
+      <Name>Glow</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+      <Options>None</Options>
+      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\Glow.xnb</Output>
+      <Time>2011-10-10T14:41:14-03:00</Time>
+    </Item>
+    <Item>
+      <Source>MultiLightShadowMap.fx</Source>
+      <Name>MultiLightShadowMap</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+      <Options>None</Options>
+      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\MultiLightShadowMap.xnb</Output>
+      <Time>2012-02-17T21:40:34-02:00</Time>
+    </Item>
+    <Item>
+      <Source>NormalMapping.fx</Source>
+      <Name>NormalMapping</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+      <Options>None</Options>
+      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\NormalMapping.xnb</Output>
+      <Time>2011-10-10T14:41:14-03:00</Time>
+    </Item>
+    <Item>
+      <Source>ParticleEffect.fx</Source>
+      <Name>ParticleEffect</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+      <Options>None</Options>
+      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\ParticleEffect.xnb</Output>
+      <Time>2011-10-10T14:41:14-03:00</Time>
+    </Item>
+    <Item>
+      <Source>SimpleShadowShader.fx</Source>
+      <Name>SimpleShadowShader</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+      <Options>None</Options>
+      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\SimpleShadowShader.xnb</Output>
+      <Time>2012-02-17T21:40:34-02:00</Time>
+    </Item>
     <BuildSuccessful>true</BuildSuccessful>
     <Settings>
       <TargetPlatform>Windows</TargetPlatform>
       <TargetProfile>HiDef</TargetProfile>
       <BuildConfiguration>Debug</BuildConfiguration>
       <CompressContent>false</CompressContent>
-      <RootDirectory>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultasContent\</RootDirectory>
-      <LoggerRootDirectory>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\</LoggerRootDirectory>
-      <IntermediateDirectory>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultasContent\obj\x86\Debug\</IntermediateDirectory>
-      <OutputDirectory>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\</OutputDirectory>
+      <RootDirectory>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultasContent\</RootDirectory>
+      <LoggerRootDirectory>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\</LoggerRootDirectory>
+      <IntermediateDirectory>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultasContent\obj\x86\Debug\</IntermediateDirectory>
+      <OutputDirectory>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\</OutputDirectory>
     </Settings>
     <Assemblies>
       <Assembly>

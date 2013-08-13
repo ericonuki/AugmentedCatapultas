@@ -17,6 +17,17 @@ using GoblinXNA.Graphics.Geometry;
 using GoblinXNA.Device.Generic;
 using GoblinXNA.UI.UI2D;
 
+using GoblinXNA.Device.Capture;
+using GoblinXNA.Device.Vision;
+using GoblinXNA.Device.Vision.Marker;
+using GoblinXNA.Device.Util;
+using GoblinXNA.Physics;
+
+using GoblinXNA.Physics.Newton1;
+
+using GoblinXNA.Helpers;
+using GoblinXNA.Shaders;
+
 namespace AugmentedCatapultas
 {
     /// <summary>
@@ -30,10 +41,15 @@ namespace AugmentedCatapultas
         SpriteBatch spriteBatch;
         SpriteFont textFont;
 
+        MarkerNode groundMarkerNode, toolbarMarkerNode;
+        GeometryNode boxNode;
+        bool useStaticImage = false;
+
         public CoreSection()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            //Content.RootDirectory = "AugmentedCatapultas\\AugmentedCatapultasContent";
 
             graphics.PreferredBackBufferWidth = 1024;
             graphics.PreferredBackBufferHeight = 768;
@@ -69,6 +85,211 @@ namespace AugmentedCatapultas
             CreateCamera();
             // Show Frames-Per-Second on the screen for debugging
             State.ShowFPS = true;
+
+            scene.PhysicsEngine = new NewtonPhysics();
+
+            // For some reason, it sometimes causes memory conflict when it attempts to update the
+            // marker transformation in the multi-threaded code, so if you see weird exceptions 
+            // thrown in Shaders, then you should not enable the marker tracking thread
+            State.ThreadOption = (ushort)ThreadOptions.MarkerTracking;
+
+            // Enable shadow mapping
+            // NOTE: In order to use shadow mapping, you will need to add 'MultiLightShadowMap.fx'
+            // and 'SimpleShadowShader.fx' shader files to your 'Content' directory. Also in here,
+            // we're creating the ShadowMap before the creation of 3D objects since we need to assign
+            // this ShadowMap to the IShadowShader used for the 3D objects
+            scene.ShadowMap = new MultiLightShadowMap();
+
+            // Set up optical marker tracking
+            // Note that we don't create our own camera when we use optical marker
+            // tracking. It'll be created automatically
+            SetupMarkerTracking();
+
+            // Set up the lights used in the scene
+            CreateLights();
+
+            // Create 3D objects
+            CreateObjects();
+
+            // Create the ground that represents the physical ground marker array
+            CreateGround();
+
+            // Show Frames-Per-Second on the screen for debugging
+            State.ShowFPS = true;
+        }
+
+        private void CreateLights()
+        {
+            // Create a directional light source
+            LightSource lightSource = new LightSource();
+            lightSource.Direction = new Vector3(1, -1, -1);
+            lightSource.Diffuse = Color.White.ToVector4();
+            lightSource.Specular = new Vector4(0.6f, 0.6f, 0.6f, 1);
+
+            // Create a light node to hold the light source
+            LightNode lightNode = new LightNode();
+            lightNode.LightSource = lightSource;
+
+            // Set this light node to cast shadows (by just setting this to true will not cast any shadows,
+            // scene.ShadowMap needs to be set to a valid IShadowMap and Model.Shader needs to be set to
+            // a proper IShadowShader implementation
+            lightNode.CastShadows = true;
+
+            // You should also set the light projection when casting shadow from this light
+            lightNode.LightProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, 1, 1f, 500);
+
+            scene.RootNode.AddChild(lightNode);
+        }
+
+        private void SetupMarkerTracking()
+        {
+            IVideoCapture captureDevice = null;
+
+            if (useStaticImage)
+            {
+                captureDevice = new NullCapture();
+                captureDevice.InitVideoCapture(0, FrameRate._30Hz, Resolution._800x600,
+                    ImageFormat.R8G8B8_24, false);
+                ((NullCapture)captureDevice).StaticImageFile = "MarkerImage";
+            }
+            else
+            {
+                // Create our video capture device that uses DirectShow library. Note that 
+                // the combinations of resolution and frame rate that are allowed depend on 
+                // the particular video capture device. Thus, setting incorrect resolution 
+                // and frame rate values may cause exceptions or simply be ignored, depending 
+                // on the device driver.  The values set here will work for a Microsoft VX 6000, 
+                // and many other webcams.
+                captureDevice = new DirectShowCapture();
+                captureDevice.InitVideoCapture(0, FrameRate._60Hz, Resolution._640x480,
+                    ImageFormat.R8G8B8_24, false);
+            }
+
+            // Add this video capture device to the scene so that it can be used for
+            // the marker tracker
+            scene.AddVideoCaptureDevice(captureDevice);
+
+            ALVARMarkerTracker tracker = new ALVARMarkerTracker();
+            tracker.MaxMarkerError = 0.02f;
+            tracker.InitTracker(captureDevice.Width, captureDevice.Height, "calib.xml", 32.4f);
+
+            // Set the marker tracker to use for our scene
+            scene.MarkerTracker = tracker;
+
+            // Display the camera image in the background. Note that this parameter should
+            // be set after adding at least one video capture device to the Scene class.
+            scene.ShowCameraImage = true;
+        }
+
+        private void CreateGround()
+        {
+            GeometryNode groundNode = new GeometryNode("Ground");
+
+            // We will use TexturedBox instead of regular Box class since we will need the
+            // texture coordinates elements for passing the vertices to the SimpleShadowShader
+            // we will be using
+            groundNode.Model = new TexturedBox(324, 180, 0.1f);
+
+            // Set this ground model to act as an occluder so that it appears transparent
+            groundNode.IsOccluder = true;
+
+            // Make the ground model to receive shadow casted by other objects with
+            // ShadowAttribute.ReceiveCast
+            groundNode.Model.ShadowAttribute = ShadowAttribute.ReceiveOnly;
+            // Assign a shadow shader for this model that uses the IShadowMap we assigned to the scene
+            groundNode.Model.Shader = new SimpleShadowShader(scene.ShadowMap);
+
+            Material groundMaterial = new Material();
+            groundMaterial.Diffuse = Color.Gray.ToVector4();
+            groundMaterial.Specular = Color.White.ToVector4();
+            groundMaterial.SpecularPower = 20;
+
+            groundNode.Material = groundMaterial;
+
+            groundMarkerNode.AddChild(groundNode);
+        }
+
+        private void CreateObjects()
+        {
+            // Create a geometry node with a model of a sphere that will be overlaid on
+            // top of the ground marker array
+            GeometryNode sphereNode = new GeometryNode("Sphere");
+            // We will use TexturedSphere instead of regular Box class since we will need the
+            // texture coordinates elements for passing the vertices to the SimpleShadowShader
+            // we will be using
+            sphereNode.Model = new TexturedSphere(16, 20, 20);
+
+            // Add this sphere model to the physics engine for collision detection
+            sphereNode.AddToPhysicsEngine = true;
+            sphereNode.Physics.Shape = ShapeType.Sphere;
+            // Make this sphere model cast and receive shadows
+            sphereNode.Model.ShadowAttribute = ShadowAttribute.ReceiveCast;
+            // Assign a shadow shader for this model that uses the IShadowMap we assigned to the scene
+            sphereNode.Model.Shader = new SimpleShadowShader(scene.ShadowMap);
+
+            // Create a marker node to track a ground marker array.
+            groundMarkerNode = new MarkerNode(scene.MarkerTracker, "ALVARGroundArray.xml");
+
+            TransformNode sphereTransNode = new TransformNode();
+            sphereTransNode.Translation = new Vector3(0, 0, 50);
+
+            // Create a material to apply to the sphere model
+            Material sphereMaterial = new Material();
+            sphereMaterial.Diffuse = new Vector4(0, 0.5f, 0, 1);
+            sphereMaterial.Specular = Color.White.ToVector4();
+            sphereMaterial.SpecularPower = 10;
+
+            sphereNode.Material = sphereMaterial;
+
+            // Now add the above nodes to the scene graph in the appropriate order.
+            // Note that only the nodes added below the marker node are affected by 
+            // the marker transformation.
+            scene.RootNode.AddChild(groundMarkerNode);
+            groundMarkerNode.AddChild(sphereTransNode);
+            sphereTransNode.AddChild(sphereNode);
+
+            // Create a geometry node with a model of a box that will be overlaid on
+            // top of the ground marker array initially. (When the toolbar marker array is
+            // detected, it will be overlaid on top of the toolbar marker array.)
+            boxNode = new GeometryNode("Box");
+            // We will use TexturedBox instead of regular Box class since we will need the
+            // texture coordinates elements for passing the vertices to the SimpleShadowShader
+            // we will be using
+            boxNode.Model = new TexturedBox(32.4f);
+
+            // Add this box model to the physics engine for collision detection
+            boxNode.AddToPhysicsEngine = true;
+            boxNode.Physics.Shape = ShapeType.Box;
+            // Make this box model cast and receive shadows
+            boxNode.Model.ShadowAttribute = ShadowAttribute.ReceiveCast;
+            // Assign a shadow shader for this model that uses the IShadowMap we assigned to the scene
+            boxNode.Model.Shader = new SimpleShadowShader(scene.ShadowMap);
+
+            // Create a marker node to track a toolbar marker array.
+            toolbarMarkerNode = new MarkerNode(scene.MarkerTracker, "ALVARToolbar.xml");
+
+            scene.RootNode.AddChild(toolbarMarkerNode);
+
+            // Create a material to apply to the box model
+            Material boxMaterial = new Material();
+            boxMaterial.Diffuse = new Vector4(0.5f, 0, 0, 1);
+            boxMaterial.Specular = Color.White.ToVector4();
+            boxMaterial.SpecularPower = 10;
+
+            boxNode.Material = boxMaterial;
+
+            // Add this box model node to the ground marker node
+            groundMarkerNode.AddChild(boxNode);
+
+            // Create a collision pair and add a collision callback function that will be
+            // called when the pair collides
+            NewtonPhysics.CollisionPair pair = new NewtonPhysics.CollisionPair(boxNode.Physics, sphereNode.Physics);
+            ((NewtonPhysics)scene.PhysicsEngine).AddCollisionCallback(pair, BoxSphereCollision);
+        }
+
+        private void BoxSphereCollision(NewtonPhysics.CollisionPair pair)
+        {
+            Console.WriteLine("Box and Sphere has collided");
         }
 
         private void CreateObject()
@@ -110,22 +331,6 @@ namespace AugmentedCatapultas
             // transform node.
             scene.RootNode.AddChild(sphereTransNode);
             sphereTransNode.AddChild(sphereNode);
-        }
-
-        private void CreateLights()
-        {
-            // Create a directional light source
-            LightSource lightSource = new LightSource();
-            lightSource.Direction = new Vector3(-1, -1, -1);
-            lightSource.Diffuse = Color.White.ToVector4();
-            lightSource.Specular = new Vector4(0.6f, 0.6f, 0.6f, 1);
-
-            // Create a light node to hold the light source
-            LightNode lightNode = new LightNode();
-            lightNode.LightSource = lightSource;
-
-            // Add this light node to the root node
-            scene.RootNode.AddChild(lightNode);
         }
 
         private void CreateCamera()

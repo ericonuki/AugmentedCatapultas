@@ -4,3 +4,7 @@
 *.zip
 *.sdf
 *.vsp
+Debug
+Release
+bin
+obj
