@@ -35,6 +35,11 @@ namespace AugmentedCatapultas
     /// </summary>
     public class CoreSection : Microsoft.Xna.Framework.Game
     {
+        int collisionCount;
+
+        List<Element> updatables;
+
+        Tiro p1Tiro;
 
         Scene scene;
         GraphicsDeviceManager graphics;
@@ -67,38 +72,24 @@ namespace AugmentedCatapultas
 
             base.Initialize();
 
+            updatables = new List<Element>();
+
             // Display the mouse cursor
             this.IsMouseVisible = true;
+
             // Initialize the GoblinXNA framework
             State.InitGoblin(graphics, Content, "");
+
             // Initialize the scene graph
             scene = new Scene();
-            // Set the background color to CornflowerBlue color.
-            // GraphicsDevice.Clear(...) is called by
-            //Scene object with this color.
-            scene.BackgroundColor = Color.CornflowerBlue;
-            // Custom method for creating a 3D object
-            CreateObject();
-            // Set up the lights used in the scene
-            CreateLights();
-            // Set up the camera, which defines the eye location //and viewing frustum
-            CreateCamera();
-            // Show Frames-Per-Second on the screen for debugging
-            State.ShowFPS = true;
 
+            // Use the newton physics engine to perform collision detection
             scene.PhysicsEngine = new NewtonPhysics();
 
             // For some reason, it sometimes causes memory conflict when it attempts to update the
             // marker transformation in the multi-threaded code, so if you see weird exceptions 
             // thrown in Shaders, then you should not enable the marker tracking thread
             State.ThreadOption = (ushort)ThreadOptions.MarkerTracking;
-
-            // Enable shadow mapping
-            // NOTE: In order to use shadow mapping, you will need to add 'MultiLightShadowMap.fx'
-            // and 'SimpleShadowShader.fx' shader files to your 'Content' directory. Also in here,
-            // we're creating the ShadowMap before the creation of 3D objects since we need to assign
-            // this ShadowMap to the IShadowShader used for the 3D objects
-            scene.ShadowMap = new MultiLightShadowMap();
 
             // Set up optical marker tracking
             // Note that we don't create our own camera when we use optical marker
@@ -108,6 +99,13 @@ namespace AugmentedCatapultas
             // Set up the lights used in the scene
             CreateLights();
 
+            // Enable shadow mapping
+            // NOTE: In order to use shadow mapping, you will need to add 'MultiLightShadowMap.fx'
+            // and 'SimpleShadowShader.fx' shader files to your 'Content' directory. Also in here,
+            // we're creating the ShadowMap before the creation of 3D objects since we need to assign
+            // this ShadowMap to the IShadowShader used for the 3D objects
+            scene.ShadowMap = new MultiLightShadowMap();
+
             // Create 3D objects
             CreateObjects();
 
@@ -116,6 +114,83 @@ namespace AugmentedCatapultas
 
             // Show Frames-Per-Second on the screen for debugging
             State.ShowFPS = true;
+
+            // Add a mouse click callback function to perform ray picking when mouse is clicked
+            MouseInput.Instance.MouseClickEvent += new GoblinXNA.Device.Generic.HandleMouseClick(Instance_MouseClickEvent);
+
+            KeyboardInput.Instance.KeyPressEvent += new HandleKeyPress(Instance_KeyPressEvent);
+
+            collisionCount = 0;
+            // Set up physics material interaction specifications between the shooting box and the ground
+            NewtonMaterial physMat = new NewtonMaterial();
+            physMat.MaterialName1 = "CannonBall";
+            physMat.MaterialName2 = "Ground";
+            physMat.Elasticity = 0.7f;
+            physMat.StaticFriction = 0.8f;
+            physMat.KineticFriction = 0.2f;
+            // Define a callback function that will be called when the two materials contact/collide
+            physMat.ContactProcessCallback = delegate(Vector3 contactPosition, Vector3 contactNormal,
+                float contactSpeed, float colObj1ContactTangentSpeed, float colObj2ContactTangentSpeed,
+                Vector3 colObj1ContactTangentDirection, Vector3 colObj2ContactTangentDirection)
+            {
+                if (contactSpeed > 2)
+                    collisionCount++;
+
+                // When a cube box collides with the ground, it can have more than 1 contact points
+                // depending on the collision surface, so we only play sound and add 3D texts once
+                // every four contacts to avoid multiple sound play or text addition for one surface
+                // contact
+                if (collisionCount >= 4)
+                {
+
+                    // Reset the count
+                    collisionCount = 0;
+                }
+            };
+
+            // Add this physics material interaction specifications to the physics engine
+            ((NewtonPhysics)scene.PhysicsEngine).AddPhysicsMaterial(physMat);
+        }
+
+        void Instance_KeyPressEvent(Keys key, KeyModifier modifier)
+        {
+            if(key == Keys.Up)
+            {
+                p1Tiro.addImpulse_using_Force(new Vector3(0, 1, 0),50);
+            }
+
+            if (key == Keys.Down)
+            {
+                p1Tiro.addImpulse_using_Force(new Vector3(0, -1, 0),50);
+            }
+
+            if (key == Keys.Left)
+            {
+                p1Tiro.addImpulse_using_Force(new Vector3(-1, 0, 0),50);
+            }
+
+            if (key == Keys.Right)
+            {
+                p1Tiro.addImpulse_using_Force(new Vector3(1, 0, 0),50);
+            }
+
+            if (key == Keys.PageUp)
+            {
+                p1Tiro.addImpulse_using_Force(new Vector3(0, 0, 1),50);
+            }
+
+            if (key == Keys.PageDown)
+            {
+                p1Tiro.addImpulse_using_Force(new Vector3(0, 0, -1),50);
+            }
+        }
+
+        void Instance_MouseClickEvent(int button, Point mouseLocation)
+        {
+            if (button == MouseInput.LeftButton)
+            {
+
+            }
         }
 
         private void CreateLights()
@@ -136,7 +211,8 @@ namespace AugmentedCatapultas
             lightNode.CastShadows = true;
 
             // You should also set the light projection when casting shadow from this light
-            lightNode.LightProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, 1, 1f, 500);
+            lightNode.LightProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4,
+                1, 1f, 500);
 
             scene.RootNode.AddChild(lightNode);
         }
@@ -188,7 +264,7 @@ namespace AugmentedCatapultas
             // We will use TexturedBox instead of regular Box class since we will need the
             // texture coordinates elements for passing the vertices to the SimpleShadowShader
             // we will be using
-            groundNode.Model = new TexturedBox(324, 180, 0.1f);
+            groundNode.Model = new TexturedBox(640, 480, 0.1f);
 
             // Set this ground model to act as an occluder so that it appears transparent
             groundNode.IsOccluder = true;
@@ -207,10 +283,19 @@ namespace AugmentedCatapultas
             groundNode.Material = groundMaterial;
 
             groundMarkerNode.AddChild(groundNode);
+
+            groundNode.Physics.Collidable = true;
+            groundNode.Physics.MaterialName = "Ground";
+            groundNode.Physics.ApplyGravity = false;
+            groundNode.Physics.Interactable = false;
+            groundNode.Physics.Manipulatable = false;
+            groundNode.Physics.Mass = 0;
+            groundNode.Physics.Pickable = false;
         }
 
         private void CreateObjects()
         {
+            
             // Create a geometry node with a model of a sphere that will be overlaid on
             // top of the ground marker array
             GeometryNode sphereNode = new GeometryNode("Sphere");
@@ -226,10 +311,10 @@ namespace AugmentedCatapultas
             sphereNode.Model.ShadowAttribute = ShadowAttribute.ReceiveCast;
             // Assign a shadow shader for this model that uses the IShadowMap we assigned to the scene
             sphereNode.Model.Shader = new SimpleShadowShader(scene.ShadowMap);
-
+            
             // Create a marker node to track a ground marker array.
             groundMarkerNode = new MarkerNode(scene.MarkerTracker, "ALVARGroundArray.xml");
-
+            
             TransformNode sphereTransNode = new TransformNode();
             sphereTransNode.Translation = new Vector3(0, 0, 50);
 
@@ -285,82 +370,20 @@ namespace AugmentedCatapultas
             // called when the pair collides
             NewtonPhysics.CollisionPair pair = new NewtonPhysics.CollisionPair(boxNode.Physics, sphereNode.Physics);
             ((NewtonPhysics)scene.PhysicsEngine).AddCollisionCallback(pair, BoxSphereCollision);
+            
+            p1Tiro = new Tiro("p1Tiro", new Vector3(0, 0, 100), 1, 20, scene);
+            groundMarkerNode.AddChild(p1Tiro.objTransfNode);
+            updatables.Add(p1Tiro);
+
+
+            ((NewtonPhysics)scene.PhysicsEngine).EnableSimulation(p1Tiro.obj.Physics);
+
+            
         }
 
         private void BoxSphereCollision(NewtonPhysics.CollisionPair pair)
         {
             Console.WriteLine("Box and Sphere has collided");
-        }
-
-        private void CreateObject()
-        {
-            // Create a transform node to define the
-            // transformation of this sphere
-            // (Transformation includes translation, rotation,
-            // and scaling)
-            TransformNode sphereTransNode = new TransformNode();
-
-            // We want to scale the sphere by half in all three
-            // dimensions and translate the sphere 5 units back
-            // along the Z axis
-            sphereTransNode.Scale = new Vector3(0.5f, 0.5f, 0.5f);
-            sphereTransNode.Translation = new Vector3(0, 0, -5);
-
-            // Create a geometry node with a model of a sphere
-            // NOTE: We strongly recommend you give each geometry
-            // node a unique name for use with
-            // the physics engine and networking; if you leave
-            // out the name, it will be automatically generated
-            GeometryNode sphereNode = new GeometryNode("Sphere");
-            sphereNode.Model = new Sphere(3, 60, 60);
-
-            // Create a material to apply to the sphere model
-            Material sphereMaterial = new Material();
-            sphereMaterial.Diffuse = new Vector4(0.5f, 0, 0, 1);
-            sphereMaterial.Specular = Color.White.ToVector4();
-            sphereMaterial.SpecularPower = 10;
-
-            // Apply this material to the sphere model
-            sphereNode.Material = sphereMaterial;
-
-            // Child nodes are affected by parent nodes. In this
-            // case, we want to make
-            // the sphere node have the transformation, so we add
-            // the transform node to
-            // the root node, and then add the sphere node to the
-            // transform node.
-            scene.RootNode.AddChild(sphereTransNode);
-            sphereTransNode.AddChild(sphereNode);
-        }
-
-        private void CreateCamera()
-        {
-            // Create a camera
-            Camera camera = new Camera();
-
-            // Put the camera at the origin
-            camera.Translation = new Vector3(0, 0, 0);
-
-            // Set the vertical field of view
-            // to be 60 degrees
-            camera.FieldOfViewY = MathHelper.ToRadians(60);
-
-            // Set the near clipping plane to be
-            // 0.1f unit away from the camera
-            camera.ZNearPlane = 0.1f;
-
-            // Set the far clipping plane to be
-            // 1000 units away from the camera
-            camera.ZFarPlane = 1000;
-
-            // Now assign this camera to a camera node,
-            // and add this camera node to our scene graph
-            CameraNode cameraNode = new CameraNode(camera);
-            scene.RootNode.AddChild(cameraNode);
-
-            // Assign the camera node to be our
-            // scene graph's current camera node
-            scene.CameraNode = cameraNode;
         }
 
         /// <summary>
@@ -405,9 +428,12 @@ namespace AugmentedCatapultas
 
             // TODO: Add your update logic here
 
+            foreach (Element obj in updatables)
+            {
+                //obj.updatePosition();
+            }
+            
             scene.Update(gameTime.ElapsedGameTime, gameTime.IsRunningSlowly, this.IsActive);
-
-            base.Update(gameTime);
         }
 
         /// <summary>
@@ -416,19 +442,43 @@ namespace AugmentedCatapultas
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            // If ground marker array is detected
+            if (groundMarkerNode.MarkerFound)
+            {
+                // If the toolbar marker array is detected, then overlay the box model on top
+                // of the toolbar marker array; otherwise, overlay the box model on top of
+                // the ground marker array
+                if (toolbarMarkerNode.MarkerFound)
+                {
+                    // The box model is overlaid on the ground marker array, so in order to
+                    // make the box model appear overlaid on the toolbar marker array, we need
+                    // to offset the ground marker array's transformation. Thus, we multiply
+                    // the toolbar marker array's transformation with the inverse of the ground marker
+                    // array's transformation, which becomes T*G(inv)*G = T*I = T as a result, 
+                    // where T is the transformation of the toolbar marker array, G is the 
+                    // transformation of the ground marker array, and I is the identity matrix. 
+                    // The Vector3(0, 0, 16.1) is a shift translation to make the box overlaid right 
+                    // on top of the toolbar marker. The top-left corner of the left marker of the 
+                    // toolbar marker array is defined as (0, 0, 0), so in order to make the box model
+                    // appear right on top of the left marker of the toolbar marker array, we shift by
+                    // half of each dimension of the 8x8x8 box model.  The approach used here requires that
+                    // the ground marker array remains visible at all times.
+                    Vector3 shiftVector = new Vector3(0, 0, 16.1f);
+                    Matrix mat = Matrix.CreateTranslation(shiftVector) *
+                        toolbarMarkerNode.WorldTransformation *
+                        Matrix.Invert(groundMarkerNode.WorldTransformation);
 
-            // TODO: Add your drawing code here
+                    // Modify the transformation in the physics engine
+                    ((NewtonPhysics)scene.PhysicsEngine).SetTransform(boxNode.Physics, mat);
+                }
+                else
+                    ((NewtonPhysics)scene.PhysicsEngine).SetTransform(boxNode.Physics,
+                        Matrix.CreateTranslation(0, 0, 16.1f));
+            }
 
-            // Draw a 2D text string at the center of the
-            // screen.
-            UI2DRenderer.WriteText(Vector2.Zero, "Hello World!!", Color.GreenYellow, textFont,
-                GoblinEnums.HorizontalAlignment.Center, GoblinEnums.VerticalAlignment.Center);
-
-            // Draw the scene graph
             scene.Draw(gameTime.ElapsedGameTime, gameTime.IsRunningSlowly);
-
-            base.Draw(gameTime);
         }
+
+        public HandleMouseClick MouselickHandler { get; set; }
     }
 }
