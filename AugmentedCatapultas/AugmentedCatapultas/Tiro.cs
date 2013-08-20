@@ -40,8 +40,14 @@ namespace AugmentedCatapultas
         public TransformNode objTransfNode;
         Scene sc;
 
-        public Tiro(String name,Vector3 inicialPosition, int _mass,int size,Scene scene)
+        public int bounceCount;
+
+        public Tiro(String name,Vector3 inicialPosition, int _mass,int size,Scene scene, MarkerNode groundReference)
         {
+            bounceCount = 0;
+
+            animationStartedApplyGravity = false;
+
             sc = scene;
 
             obj = new GeometryNode(name);
@@ -60,8 +66,8 @@ namespace AugmentedCatapultas
             obj.Physics.MaterialName = "CannonBall";
             obj.Physics.ApplyGravity = false;
 
-            objTransfNode = new TransformNode();
-            objTransfNode.Translation = _position;
+            objTransfNode = new TransformNode(_position);
+            objTransfNode.AddChild(obj);
 
             Material objMaterial = new Material();
             objMaterial.Diffuse = new Vector4(0, 0.5f, 0, 1);
@@ -70,11 +76,11 @@ namespace AugmentedCatapultas
 
             obj.Material = objMaterial;
 
-            objTransfNode.AddChild(obj);
-
             mass = _mass;
 
             lastTimePositionWasUpdated = DateTime.Now;
+
+            resetBall(groundReference);
         }
 
         public void addMomentum(Vector3 momentum) // Em relação à posição atual do tiro. Novamente, não à posição real dele.
@@ -87,12 +93,12 @@ namespace AugmentedCatapultas
             _momentum += (externalForce / mass) * (milisseconds / 1000f);
         }
 
-        public void addImpulse_using_Mass_and_Velocity(int externalMass, Vector3 externalVelocity) //Considerando que a raquete do jogador tem massa infinita, ou seja, não se mexe com força aplicada...
+        public void addImpulse_using_Mass_and_Velocity(int externalMass, Vector3 externalVelocity) //Considerando que a raquete do jogador tem massa infinita, ou seja, não se mexe com força aplicada... Tem que ver o angulo de contato.
         {
-            _momentum += (externalMass * externalVelocity) / mass;
+            _momentum += externalVelocity;
         }
 
-        public override void updatePosition()
+        public override void updatePosition(MarkerNode groundReference)
         {
             int deltaT = (DateTime.Now - lastTimePositionWasUpdated).Milliseconds;
 
@@ -104,6 +110,46 @@ namespace AugmentedCatapultas
             ((NewtonPhysics)sc.PhysicsEngine).SetTransform(obj.Physics, mat);
 
             lastTimePositionWasUpdated = DateTime.Now;
+
+            if (bounceCount > 2)
+            {
+                resetBall(groundReference);
+            }
+            //if (_position.LengthSquared() > 1000000)
+            //{
+            //    resetBall(groundReference);
+            //}
+            Vector3 groundScale;
+            Quaternion groundQuaternion;
+            Vector3 groundTranslation;
+            groundReference.WorldTransformation.Decompose(out groundScale, out groundQuaternion, out groundTranslation);
+            Vector3 ballScale;
+            Quaternion ballQuaternion;
+            Vector3 ballTranslation;
+            obj.Physics.PhysicsWorldTransform.Decompose(out ballScale, out ballQuaternion, out ballTranslation);
+
+            float ball_ground_distance_squared = (groundTranslation - ballTranslation).LengthSquared();
+
+            if ((ballTranslation).LengthSquared() > 400000)
+            {
+                resetBall(groundReference);
+            }
+        }
+
+        public void resetBall(MarkerNode groundReference)
+        {
+            animationStartedApplyGravity = false;
+            _position.X = 100;
+            _position.Y = 0;
+            _position.Z = 100;
+            _momentum.X = 0;
+            _momentum.Y = 0;
+            _momentum.Z = 0;
+            bounceCount = 0;
+
+            Matrix mat = Matrix.CreateTranslation(_position);
+
+            ((NewtonPhysics)sc.PhysicsEngine).SetTransform(obj.Physics, mat);
         }
     }
 }

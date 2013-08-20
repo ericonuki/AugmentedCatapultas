@@ -45,6 +45,7 @@ namespace AugmentedCatapultas
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         SpriteFont textFont;
+        GeometryNode groundNode;
 
         MarkerNode groundMarkerNode, toolbarMarkerNode;
         GeometryNode boxNode;
@@ -115,11 +116,6 @@ namespace AugmentedCatapultas
             // Show Frames-Per-Second on the screen for debugging
             State.ShowFPS = true;
 
-            // Add a mouse click callback function to perform ray picking when mouse is clicked
-            MouseInput.Instance.MouseClickEvent += new GoblinXNA.Device.Generic.HandleMouseClick(Instance_MouseClickEvent);
-
-            KeyboardInput.Instance.KeyPressEvent += new HandleKeyPress(Instance_KeyPressEvent);
-
             collisionCount = 0;
             // Set up physics material interaction specifications between the shooting box and the ground
             NewtonMaterial physMat = new NewtonMaterial();
@@ -150,47 +146,6 @@ namespace AugmentedCatapultas
 
             // Add this physics material interaction specifications to the physics engine
             ((NewtonPhysics)scene.PhysicsEngine).AddPhysicsMaterial(physMat);
-        }
-
-        void Instance_KeyPressEvent(Keys key, KeyModifier modifier)
-        {
-            if(key == Keys.Up)
-            {
-                p1Tiro.addImpulse_using_Force(new Vector3(0, 1, 0),50);
-            }
-
-            if (key == Keys.Down)
-            {
-                p1Tiro.addImpulse_using_Force(new Vector3(0, -1, 0),50);
-            }
-
-            if (key == Keys.Left)
-            {
-                p1Tiro.addImpulse_using_Force(new Vector3(-1, 0, 0),50);
-            }
-
-            if (key == Keys.Right)
-            {
-                p1Tiro.addImpulse_using_Force(new Vector3(1, 0, 0),50);
-            }
-
-            if (key == Keys.PageUp)
-            {
-                p1Tiro.addImpulse_using_Force(new Vector3(0, 0, 1),50);
-            }
-
-            if (key == Keys.PageDown)
-            {
-                p1Tiro.addImpulse_using_Force(new Vector3(0, 0, -1),50);
-            }
-        }
-
-        void Instance_MouseClickEvent(int button, Point mouseLocation)
-        {
-            if (button == MouseInput.LeftButton)
-            {
-
-            }
         }
 
         private void CreateLights()
@@ -259,12 +214,12 @@ namespace AugmentedCatapultas
 
         private void CreateGround()
         {
-            GeometryNode groundNode = new GeometryNode("Ground");
+            groundNode = new GeometryNode("Ground");
 
             // We will use TexturedBox instead of regular Box class since we will need the
             // texture coordinates elements for passing the vertices to the SimpleShadowShader
             // we will be using
-            groundNode.Model = new TexturedBox(640, 480, 0.1f);
+            groundNode.Model = new TexturedBox(800, 600, 0.1f);
 
             // Set this ground model to act as an occluder so that it appears transparent
             groundNode.IsOccluder = true;
@@ -284,55 +239,33 @@ namespace AugmentedCatapultas
 
             groundMarkerNode.AddChild(groundNode);
 
+            groundNode.AddToPhysicsEngine = true;
+            groundNode.Physics.Shape = ShapeType.Box;
             groundNode.Physics.Collidable = true;
-            groundNode.Physics.MaterialName = "Ground";
+            //groundNode.Physics.MaterialName = "Ground";
             groundNode.Physics.ApplyGravity = false;
-            groundNode.Physics.Interactable = false;
-            groundNode.Physics.Manipulatable = false;
-            groundNode.Physics.Mass = 0;
-            groundNode.Physics.Pickable = false;
+            groundNode.Physics.Interactable = true;
+            groundNode.Physics.Manipulatable = true;
+            groundNode.Physics.Mass = 1;
+            groundNode.Physics.Pickable = true;
+
+            NewtonPhysics.CollisionPair CannonGroundColisionPair = new NewtonPhysics.CollisionPair(p1Tiro.obj.Physics, groundNode.Physics);
+
+            ((NewtonPhysics)scene.PhysicsEngine).AddCollisionCallback(CannonGroundColisionPair, ballBounceGround);
         }
 
         private void CreateObjects()
         {
             
-            // Create a geometry node with a model of a sphere that will be overlaid on
-            // top of the ground marker array
-            GeometryNode sphereNode = new GeometryNode("Sphere");
-            // We will use TexturedSphere instead of regular Box class since we will need the
-            // texture coordinates elements for passing the vertices to the SimpleShadowShader
-            // we will be using
-            sphereNode.Model = new TexturedSphere(16, 20, 20);
-
-            // Add this sphere model to the physics engine for collision detection
-            sphereNode.AddToPhysicsEngine = true;
-            sphereNode.Physics.Shape = ShapeType.Sphere;
-            // Make this sphere model cast and receive shadows
-            sphereNode.Model.ShadowAttribute = ShadowAttribute.ReceiveCast;
-            // Assign a shadow shader for this model that uses the IShadowMap we assigned to the scene
-            sphereNode.Model.Shader = new SimpleShadowShader(scene.ShadowMap);
-            
             // Create a marker node to track a ground marker array.
             groundMarkerNode = new MarkerNode(scene.MarkerTracker, "ALVARGroundArray.xml");
             
-            TransformNode sphereTransNode = new TransformNode();
-            sphereTransNode.Translation = new Vector3(0, 0, 50);
-
-            // Create a material to apply to the sphere model
-            Material sphereMaterial = new Material();
-            sphereMaterial.Diffuse = new Vector4(0, 0.5f, 0, 1);
-            sphereMaterial.Specular = Color.White.ToVector4();
-            sphereMaterial.SpecularPower = 10;
-
-            sphereNode.Material = sphereMaterial;
 
             // Now add the above nodes to the scene graph in the appropriate order.
             // Note that only the nodes added below the marker node are affected by 
             // the marker transformation.
             scene.RootNode.AddChild(groundMarkerNode);
-            groundMarkerNode.AddChild(sphereTransNode);
-            sphereTransNode.AddChild(sphereNode);
-
+            
             // Create a geometry node with a model of a box that will be overlaid on
             // top of the ground marker array initially. (When the toolbar marker array is
             // detected, it will be overlaid on top of the toolbar marker array.)
@@ -340,7 +273,7 @@ namespace AugmentedCatapultas
             // We will use TexturedBox instead of regular Box class since we will need the
             // texture coordinates elements for passing the vertices to the SimpleShadowShader
             // we will be using
-            boxNode.Model = new TexturedBox(32.4f);
+            boxNode.Model = new TexturedBox(100f,100f,5);
 
             // Add this box model to the physics engine for collision detection
             boxNode.AddToPhysicsEngine = true;
@@ -365,25 +298,50 @@ namespace AugmentedCatapultas
 
             // Add this box model node to the ground marker node
             groundMarkerNode.AddChild(boxNode);
-
-            // Create a collision pair and add a collision callback function that will be
-            // called when the pair collides
-            NewtonPhysics.CollisionPair pair = new NewtonPhysics.CollisionPair(boxNode.Physics, sphereNode.Physics);
-            ((NewtonPhysics)scene.PhysicsEngine).AddCollisionCallback(pair, BoxSphereCollision);
             
-            p1Tiro = new Tiro("p1Tiro", new Vector3(0, 0, 100), 1, 20, scene);
+            p1Tiro = new Tiro("p1Tiro", new Vector3(100, 0, 100), 1, 20, scene,groundMarkerNode);
             groundMarkerNode.AddChild(p1Tiro.objTransfNode);
             updatables.Add(p1Tiro);
 
+            NewtonPhysics.CollisionPair CannonPlayerColisionPair = new NewtonPhysics.CollisionPair(p1Tiro.obj.Physics, boxNode.Physics);
 
-            ((NewtonPhysics)scene.PhysicsEngine).EnableSimulation(p1Tiro.obj.Physics);
-
+            ((NewtonPhysics)scene.PhysicsEngine).AddCollisionCallback(CannonPlayerColisionPair, playerShot);
             
         }
 
-        private void BoxSphereCollision(NewtonPhysics.CollisionPair pair)
+        private void playerShot(NewtonPhysics.CollisionPair pair)
         {
-            Console.WriteLine("Box and Sphere has collided");
+            Vector3 scaleBox;
+            Quaternion rotationBox;
+            Vector3 translationBox;
+            pair.CollisionObject2.PhysicsWorldTransform.Decompose(out scaleBox, out rotationBox, out translationBox);
+
+            Vector3 scaleSphere;
+            Quaternion rotationSphere;
+            Vector3 translationSphere;
+            pair.CollisionObject1.PhysicsWorldTransform.Decompose(out scaleSphere, out rotationSphere, out translationSphere);
+
+            Vector3 racket_direction = Vector3.Transform(new Vector3(0, 0, 1), rotationBox);
+
+            Vector3 resulting_direction = Vector3.Transform(racket_direction, Quaternion.Inverse(rotationSphere));
+
+            p1Tiro.addImpulse_using_Mass_and_Velocity(1, resulting_direction / 10);
+
+            p1Tiro.animationStartedApplyGravity = true;
+        }
+
+        private void ballBounceGround(NewtonPhysics.CollisionPair pair)
+        {
+            p1Tiro.bounceCount++;
+            if (p1Tiro._momentum.Z < 0)
+            {
+                Vector3 impulseForceWithDrag = new Vector3(p1Tiro._momentum.X * -0.3f, p1Tiro._momentum.Y * -0.3f, p1Tiro._momentum.Z * -1.7f);
+                p1Tiro._momentum += impulseForceWithDrag;
+                if (p1Tiro._momentum.Z < 0.2)
+                {
+                    p1Tiro._momentum.Z = 0;
+                }
+            }
         }
 
         /// <summary>
@@ -430,7 +388,11 @@ namespace AugmentedCatapultas
 
             foreach (Element obj in updatables)
             {
-                //obj.updatePosition();
+                obj.updatePosition(groundMarkerNode);
+                if (p1Tiro.animationStartedApplyGravity)
+                {
+                    p1Tiro.addImpulse_using_Force(new Vector3(0, 0, -0.85f), gameTime.ElapsedGameTime.Milliseconds);
+                }
             }
             
             scene.Update(gameTime.ElapsedGameTime, gameTime.IsRunningSlowly, this.IsActive);
@@ -463,7 +425,7 @@ namespace AugmentedCatapultas
                     // appear right on top of the left marker of the toolbar marker array, we shift by
                     // half of each dimension of the 8x8x8 box model.  The approach used here requires that
                     // the ground marker array remains visible at all times.
-                    Vector3 shiftVector = new Vector3(0, 0, 16.1f);
+                    Vector3 shiftVector = new Vector3(0, 0, 5f);
                     Matrix mat = Matrix.CreateTranslation(shiftVector) *
                         toolbarMarkerNode.WorldTransformation *
                         Matrix.Invert(groundMarkerNode.WorldTransformation);
@@ -473,7 +435,7 @@ namespace AugmentedCatapultas
                 }
                 else
                     ((NewtonPhysics)scene.PhysicsEngine).SetTransform(boxNode.Physics,
-                        Matrix.CreateTranslation(0, 0, 16.1f));
+                        Matrix.CreateTranslation(0, 0, 5f));
             }
 
             scene.Draw(gameTime.ElapsedGameTime, gameTime.IsRunningSlowly);
