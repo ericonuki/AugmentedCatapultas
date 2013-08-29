@@ -32,6 +32,8 @@ namespace AugmentedCatapultas
 {
     class Tiro:Element
     {
+        private const int MAXRBOUNCEBEFORERESET = 6;
+
         private DateTime lastTimePositionWasUpdated; // Quando foi a última vez que esse negócio foi atualizado na tela? Era bom olhar né?
         public Vector3 _momentum; // Pois não vou mudar a referencia do tiro. Não consigo pensar COMO fazer isso agora. Vai ser sempre em relação ao chão. Eu sei que é só aplicar a matriz de transformação invertida e bla bla bla.
         public Vector3 _position;
@@ -111,7 +113,7 @@ namespace AugmentedCatapultas
 
             lastTimePositionWasUpdated = DateTime.Now;
 
-            if (bounceCount > 2)
+            if (bounceCount > MAXRBOUNCEBEFORERESET)
             {
                 resetBall(groundReference);
             }

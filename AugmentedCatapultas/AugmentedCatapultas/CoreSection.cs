@@ -28,6 +28,11 @@ using GoblinXNA.Physics.Newton1;
 using GoblinXNA.Helpers;
 using GoblinXNA.Shaders;
 
+using GoblinXNA.UI;
+using GoblinXNA.UI.UI3D;
+
+using Nuclex.Fonts;
+
 namespace AugmentedCatapultas
 {
     /// <summary>
@@ -36,6 +41,8 @@ namespace AugmentedCatapultas
     public class CoreSection : Microsoft.Xna.Framework.Game
     {
         int collisionCount;
+
+        Random rd = new Random();
 
         List<Element> updatables;
 
@@ -49,7 +56,17 @@ namespace AugmentedCatapultas
 
         MarkerNode groundMarkerNode, toolbarMarkerNode;
         GeometryNode boxNode;
+        GeometryNode targetNode;
         bool useStaticImage = false;
+
+        Vector3 targetTranslation;
+        Quaternion targetQuaternion;
+
+        int count;
+
+        int score = 0;
+
+        VectorFont vectorFont;
 
         public CoreSection()
         {
@@ -59,6 +76,8 @@ namespace AugmentedCatapultas
 
             graphics.PreferredBackBufferWidth = 1024;
             graphics.PreferredBackBufferHeight = 768;
+
+            count = 0;
         }
 
         /// <summary>
@@ -136,7 +155,7 @@ namespace AugmentedCatapultas
                 // depending on the collision surface, so we only play sound and add 3D texts once
                 // every four contacts to avoid multiple sound play or text addition for one surface
                 // contact
-                if (collisionCount >= 4)
+                if (collisionCount >= 8)
                 {
 
                     // Reset the count
@@ -299,14 +318,48 @@ namespace AugmentedCatapultas
             // Add this box model node to the ground marker node
             groundMarkerNode.AddChild(boxNode);
             
-            p1Tiro = new Tiro("p1Tiro", new Vector3(100, 0, 100), 1, 20, scene,groundMarkerNode);
+            p1Tiro = new Tiro("p1Tiro", new Vector3(150, 0, 300), 1, 20, scene,groundMarkerNode);
             groundMarkerNode.AddChild(p1Tiro.objTransfNode);
             updatables.Add(p1Tiro);
 
             NewtonPhysics.CollisionPair CannonPlayerColisionPair = new NewtonPhysics.CollisionPair(p1Tiro.obj.Physics, boxNode.Physics);
 
             ((NewtonPhysics)scene.PhysicsEngine).AddCollisionCallback(CannonPlayerColisionPair, playerShot);
+
+            targetNode = new GeometryNode("Box");
+            // We will use TexturedBox instead of regular Box class since we will need the
+            // texture coordinates elements for passing the vertices to the SimpleShadowShader
+            // we will be using
+            targetNode.Model = new TexturedBox(20f, 20f, 5);
+
+            // Add this box model to the physics engine for collision detection
+            targetNode.AddToPhysicsEngine = true;
+            targetNode.Physics.Shape = ShapeType.Box;
+            // Make this box model cast and receive shadows
+            targetNode.Model.ShadowAttribute = ShadowAttribute.ReceiveCast;
+            // Assign a shadow shader for this model that uses the IShadowMap we assigned to the scene
+            targetNode.Model.Shader = new SimpleShadowShader(scene.ShadowMap);
+
+            Material targetMaterial = new Material();
+            targetMaterial.Diffuse = Color.Indigo.ToVector4();
+            targetMaterial.Specular = Color.DarkGoldenrod.ToVector4();
+            targetMaterial.SpecularPower = 10;
+
+            targetNode.Material = targetMaterial;
+
+            groundMarkerNode.AddChild(targetNode);
+
+            NewtonPhysics.CollisionPair PlayerScoreColisionPair = new NewtonPhysics.CollisionPair(p1Tiro.obj.Physics, targetNode.Physics);
+
+            ((NewtonPhysics)scene.PhysicsEngine).AddCollisionCallback(PlayerScoreColisionPair, playerScore);
             
+            
+        }
+
+        private void playerScore(NewtonPhysics.CollisionPair pair)
+        {
+            score++;
+            p1Tiro.resetBall(groundMarkerNode);
         }
 
         private void playerShot(NewtonPhysics.CollisionPair pair)
@@ -354,6 +407,8 @@ namespace AugmentedCatapultas
             spriteBatch = new SpriteBatch(GraphicsDevice);
             textFont = Content.Load<SpriteFont>("Sample");
 
+            vectorFont = Content.Load<VectorFont>("Arial-24-Vector");
+
             // TODO: use this.Content to load your game content here
         }
 
@@ -385,6 +440,32 @@ namespace AugmentedCatapultas
                 this.Exit();
 
             // TODO: Add your update logic here
+
+            if (--count < 0)
+            {
+                count = 20;
+                targetTranslation += new Vector3(rd.Next(gameTime.ElapsedGameTime.Milliseconds)*2, rd.Next(gameTime.ElapsedGameTime.Milliseconds)*2, rd.Next(gameTime.ElapsedGameTime.Milliseconds)*2);
+                targetTranslation -= new Vector3(rd.Next(gameTime.ElapsedGameTime.Milliseconds)*2, rd.Next(gameTime.ElapsedGameTime.Milliseconds)*2, rd.Next(gameTime.ElapsedGameTime.Milliseconds)*2);
+
+                //targetQuaternion = new Quaternion(new Vector3(rd.Next(gameTime.ElapsedGameTime.Milliseconds) * 2, rd.Next(gameTime.ElapsedGameTime.Milliseconds) * 2, rd.Next(gameTime.ElapsedGameTime.Milliseconds) * 2), 1);
+            }
+
+            if (targetTranslation.Z <= 20)
+                targetTranslation.Z = 21;
+            if (targetTranslation.Z >= 100)
+                targetTranslation.Z = 99;
+            if (targetTranslation.Y <= -100)
+                targetTranslation.Y = -99;
+            if (targetTranslation.Y >= 100)
+                targetTranslation.Y = 99;
+            if (targetTranslation.X <= -200)
+                targetTranslation.X = -199;
+            if (targetTranslation.X >= -99)
+                targetTranslation.X = -100;
+
+            Matrix mat = Matrix.CreateTranslation(targetTranslation);
+
+            ((NewtonPhysics)scene.PhysicsEngine).SetTransform(targetNode.Physics, mat);
 
             foreach (Element obj in updatables)
             {
@@ -437,6 +518,9 @@ namespace AugmentedCatapultas
                     ((NewtonPhysics)scene.PhysicsEngine).SetTransform(boxNode.Physics,
                         Matrix.CreateTranslation(0, 0, 5f));
             }
+
+            UI3DRenderer.Write3DText("Score: " + score, vectorFont, UI3DRenderer.Text3DStyle.Extrude,
+                            Color.Lavender, toolbarMarkerNode.WorldTransformation);
 
             scene.Draw(gameTime.ElapsedGameTime, gameTime.IsRunningSlowly);
         }

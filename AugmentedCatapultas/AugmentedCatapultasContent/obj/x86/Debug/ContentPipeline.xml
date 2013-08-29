@@ -17,7 +17,7 @@
       <Processor>FontDescriptionProcessor</Processor>
       <Options>None</Options>
       <Output>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\DebugFont.xnb</Output>
-      <Time>2011-10-10T14:41:14-03:00</Time>
+      <Time>2013-08-28T21:47:37.3302366-03:00</Time>
     </Item>
     <Item>
       <Source>DirectXShader.fx</Source>
@@ -25,7 +25,7 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
       <Options>None</Options>
-      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\DirectXShader.xnb</Output>
+      <Output>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\DirectXShader.xnb</Output>
       <Time>2011-10-10T14:41:14-03:00</Time>
     </Item>
     <Item>
@@ -34,7 +34,7 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
       <Options>None</Options>
-      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\Glow.xnb</Output>
+      <Output>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\Glow.xnb</Output>
       <Time>2011-10-10T14:41:14-03:00</Time>
     </Item>
     <Item>
@@ -43,7 +43,7 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
       <Options>None</Options>
-      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\MultiLightShadowMap.xnb</Output>
+      <Output>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\MultiLightShadowMap.xnb</Output>
       <Time>2012-02-17T21:40:34-02:00</Time>
     </Item>
     <Item>
@@ -52,7 +52,7 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
       <Options>None</Options>
-      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\NormalMapping.xnb</Output>
+      <Output>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\NormalMapping.xnb</Output>
       <Time>2011-10-10T14:41:14-03:00</Time>
     </Item>
     <Item>
@@ -61,7 +61,7 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
       <Options>None</Options>
-      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\ParticleEffect.xnb</Output>
+      <Output>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\ParticleEffect.xnb</Output>
       <Time>2011-10-10T14:41:14-03:00</Time>
     </Item>
     <Item>
@@ -70,7 +70,7 @@
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
       <Options>None</Options>
-      <Output>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\SimpleShadowShader.xnb</Output>
+      <Output>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\SimpleShadowShader.xnb</Output>
       <Time>2012-02-17T21:40:34-02:00</Time>
     </Item>
     <BuildSuccessful>true</BuildSuccessful>
@@ -79,12 +79,16 @@
       <TargetProfile>HiDef</TargetProfile>
       <BuildConfiguration>Debug</BuildConfiguration>
       <CompressContent>false</CompressContent>
-      <RootDirectory>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultasContent\</RootDirectory>
-      <LoggerRootDirectory>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\</LoggerRootDirectory>
-      <IntermediateDirectory>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultasContent\obj\x86\Debug\</IntermediateDirectory>
-      <OutputDirectory>e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\</OutputDirectory>
+      <RootDirectory>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultasContent\</RootDirectory>
+      <LoggerRootDirectory>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\</LoggerRootDirectory>
+      <IntermediateDirectory>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultasContent\obj\x86\Debug\</IntermediateDirectory>
+      <OutputDirectory>e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\</OutputDirectory>
     </Settings>
     <Assemblies>
+      <Assembly>
+        <Key>D:\GoblinXNAv4.1\dlls\managed\Nuclex.Fonts.Content.TrueTypeImporter.dll</Key>
+        <Value>2011-10-10T14:42:36-03:00</Value>
+      </Assembly>
       <Assembly>
         <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.XImporter.dll</Key>
         <Value>2010-08-23T12:41:18-03:00</Value>

@@ -12,3 +12,4 @@ Content\MultiLightShadowMap.fx
 Content\NormalMapping.fx
 Content\ParticleEffect.fx
 Content\SimpleShadowShader.fx
+Content\Arial-24-Vector.xnb

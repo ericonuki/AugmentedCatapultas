@@ -44,3 +44,4 @@ e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\Augmente
 e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\NormalMapping.fx
 e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\ParticleEffect.fx
 e:\users\eric\documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\calib.xml
+e:\Users\Eric\Documents\visual studio 2010\Projects\AugmentedCatapultas\AugmentedCatapultas\AugmentedCatapultas\bin\x86\Debug\Content\Arial-24-Vector.xnb

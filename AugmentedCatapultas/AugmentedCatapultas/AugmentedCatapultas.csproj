@@ -97,6 +97,13 @@
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
+    <Reference Include="Nuclex.Fonts, Version=2.0.4077.29212, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\GoblinXNAv4.1\dlls\managed\Nuclex.Fonts.dll</HintPath>
+    </Reference>
+    <Reference Include="Nuclex.Fonts.Content.TrueTypeImporter">
+      <HintPath>D:\GoblinXNAv4.1\dlls\managed\Nuclex.Fonts.Content.TrueTypeImporter.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>

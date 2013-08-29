@@ -12,10 +12,11 @@ Content\MultiLightShadowMap.fx
 Content\NormalMapping.fx
 Content\ParticleEffect.fx
 Content\SimpleShadowShader.fx
+Content\Arial-24-Vector.xnb
 alvar200.dll
 alvarplatform200.dll
 ALVARWrapper.dll
-default_calib.xml
+calib.xml
 Newton.dll
 opencv_calib3d240.dll
 opencv_core240.dll
@@ -28,4 +29,3 @@ opencv_ml240.dll
 opencv_video240.dll
 ALVARGroundArray.xml
 ALVARToolbar.xml
-calib.xml

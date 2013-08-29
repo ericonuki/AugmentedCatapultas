@@ -40,6 +40,9 @@
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline.VideoImporters, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
+    <Reference Include="Nuclex.Fonts.Content.TrueTypeImporter">
+      <HintPath>D:\GoblinXNAv4.1\dlls\managed\Nuclex.Fonts.Content.TrueTypeImporter.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Sample.spritefont">
@@ -92,6 +95,14 @@
       <Processor>EffectProcessor</Processor>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Arial-24-Vector.xnb">
+      <Name>Arial-24-Vector</Name>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>NuclexVectorFontDescriptionProcessor</Processor>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!--  To modify your build process, add your task inside one of the targets below and uncomment it. 
